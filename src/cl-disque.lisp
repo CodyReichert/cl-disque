@@ -74,7 +74,6 @@ CMD is the command name (a string or a symbol), and ARGS are its arguments
   (force-output (conn-stream *connection*)))
 
 (defmethod tell (cmd &rest args)
-  (format t "~A ~A~%" cmd args)
   (let ((all-args (cl:append (ppcre:split "-" (ensure-string cmd))
                              args)))
     (format-disque-number #\* (length all-args))
