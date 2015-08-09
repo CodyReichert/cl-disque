@@ -1,0 +1,156 @@
+#+TITLE: CL-DISQUE
+#+AUTHOR: Cody Reichert
+#+EMAIL: codyreichert@gmail.com 
+
+A Disque client for Common Lisp.
+
+* Usage
+
+** Quickstart
+
+1) Make sure a Disque server is running.
+2) =(ql:quickload 'cl-disque)=
+3) Connect to the server to the given host and port with:
+
+   #+BEGIN_SRC lisp
+     ; host defaults to 127.0.0.1, port — to 7711
+     (cl-disque:connect :host <host> :port <port>)
+   #+END_SRC
+
+4) Interact with the server using Disque commands from the =disque= package.
+   
+   #+BEGIN_SRC lisp
+   (disque:hello)
+   ;=> (1 "some-node-id"
+   ;    ("some-node-id" "" "7711" "1"))
+   #+END_SRC
+
+   
+5) Disconnect from the server with =(cl-disque:disconnect)=.
+6) Alternatively, wrap the whole interaction session in =with-connection= macro,
+   which accepts the same arguments as =connect=, opens a socket connection,
+   executes the body of the macro with the current connection (=*connection*=)
+   bound to this new connection, and ensures that the connection is closed
+   afterwards.
+
+** Available commands
+
+
+
+** Code organization
+
+The system provides 2 packages: =CL-DISQUE= and =DISQUE=.  All the
+functionality is available from the =CL-DISQUE= package.  Not to cause
+symbol clashes, Disque commands are defined in this package with a
+prefix (which defaults to =disque-= and is set at compilation time).
+The package =DISQUE= is a syntactic sugar — it just provides the Disque
+commands without a prefix.  So it is not intended to be imported to
+avoid symbol conflicts with package =COMMON-LISP= — just use the
+package-qualified symbol names: i.e. the same Disque command (for
+instance =INFO=) can be called as =DISQUE-INFO= (if you import the =CL-DISQUE= package)
+or =DISQUE:INFO=.
+
+
+** Installation
+
+This package is currently available through Git, but if you use
+Quicklisp you can clone it into your =~/quicklisp/local-projects/=
+directory, and =(ql:quickload :cl-disque)= as normal.
+
+** Dependencies
+
+- [[http://common-lisp.net/project/usocket/][usocket]]
+- [[http://common-lisp.net/project/flexi-streams/][flexi-streams]]
+- [[http://github.com/vseloved/rutils][rutils]]
+- For tests:
+  - [[http://github.com/vseloved/nuts][nuts]]
+  - [[http://common-lisp.net/project/bordeaux-threads][bordeaux-threads]]
+
+
+** Debugging and error recovery
+
+If =*echo-p*= is =T=, all client-server communications will be
+echoed to the stream =*echo-stream*=, which defaults to =*standard-output*=.
+
+Error handling is mimicked after [[http://common-lisp.net/project/postmodern/][Postmodern]]. In particular, whenever
+an error occurs that breaks the communication stream, a condition of
+type =disque-connection-error= is signalled offering a =:reconnect=
+restart.  If it is selected the whole Disque command will be resent, if
+the reconnection attempt succeeds.  Furthermore, =connect= checks if a
+connection to Disque is already established, and offers two restarts
+(=:leave= and =:replace=) if this is the case.
+
+When the server respondes with an error reply a condition of type
+=disque-error-reply= is signalled.
+
+There's also a high-level =with-persistent-connection= macro, that
+tries to do the right thing™ (i.e. automatically reopen the connection
+once, if it is broken).
+
+
+** Advanced usage
+
+*** Pipelining
+
+For better performance Disque allows to pipeline commands and delay
+receiving results until the end, and process them all in oine batch
+afterwards.  To support that there's =with-pipelining= macro.
+
+Note, that =with-pipelining= calls theoretically may nest, but the
+results will only be available to the highest-level pipeline, all the
+nested pipelines will return :PIPELINED.  So a warining is signalled
+in this situation.
+
+
+** Internals
+
+Generic functions =tell= and =expect= implement the Disque protocol.
+=tell= specifies how a request to Disque is formatted,
+=expect= is how the response is handled.
+The best way to implement another method on =expect= is usually with
+=def-expect-method=, which arranges reading data from the socket
+and provides a variable =reply=, which holds the decoded reply data
+from the server with the initial character removed. For example:
+
+    (def-expect-method :ok
+      (assert (string= reply "OK"))
+      reply)
+
+Disque operations are defined as ordinary functions by =def-cmd=
+for which only arguments and return type should be provided.
+=def-cmd= prefixes all the defined functions' names with =*cmd-prefix*=,
+which defaults to =\'red=.
+(Note, that setting of =*cmd-prefix*= will have its effects at compile time).
+It also exports them from =CL-DISQUE= package,
+and from =DISQUE= package without the prefix.
+
+An example of command definition is given below:
+
+    (def-cmd KEYS (pattern) :multi
+      "Return all the keys matching the given pattern.")
+
+See =commands.lisp= for all defined commands.
+
+
+** Not implemented
+
+- =JSCAN= is currently the only command not implemented.
+
+** Credits
+
+Cody Reichert <codyreichert@gmail.com> is the maintainer of =CL-DISQUE=.
+
+=CL-DISQUE= is a port of the =CL-REDIS= client, which is developed and
+maintained by Vsevolod Dyomkin <vseloved@gmail.com>. Many thanks to
+him for implementing the protocol and providing the internals.
+
+Alexandr Manzyuk <manzyuk@googlemail.com> also contributed to
+=CL-REDIS= client and developed the connection handling code following
+the implementation in [[http://common-lisp.net/project/postmodern/][Postmodern]]. It was since partially rewritten to
+accommodate more advanced connection handling strategies, like
+persistent connection.
+
+
+** License
+
+MIT (See LICENSE file for details).
