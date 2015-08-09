@@ -241,7 +241,7 @@ server with the first character removed."
 
 ;;; Command definition
 
-(defparameter *cmd-prefix* 'disuqe
+(defparameter *cmd-prefix* 'disque
   "Prefix for functions names that implement Disque commands.")
 
 (defmacro def-cmd (cmd (&rest args) reply-type docstring)

@@ -32,14 +32,24 @@ jobs, from the newest from the oldest.")
 (defmethod tell ((cmd (eql 'GETJOB)) &rest args)
   (ds-bind (queue &key nohang timeout count withcounters) args
     (apply #'tell (cl:append (list "GETJOB")
-                             (if nohang `("NOHANG"))
+                             (when nohang `("NOHANG"))
                              (when timeout `("TIMEOUT" ,timeout))
                              (when count `("COUNT" ,count))
                              (when withcounters `("WITHCOUNTERS"))
                              (list "FROM") (list queue)))))
 
 
-(def-cmd ADDJOB (queue job ms-timeout) :status
+(def-cmd ADDJOB (queue job timeout &rest args &key replicate delay retry ttl maxlen async) :status
   "Adds a job to the specified queue.")
+
+(defmethod tell ((cmd (eql 'ADDJOB)) &rest args)
+  (ds-bind (queue job timeout &key replicate delay retry ttl maxlen async) args
+    (apply #'tell (cl:append (list "ADDJOB" queue job timeout)
+                             (when replicate `("REPLICATE" ,replicate))
+                             (when delay `("DELAY" ,delay))
+                             (when retry `("RETRY" ,retry))
+                             (when ttl `("TTL" ,ttl))
+                             (when maxlen `("MAXLEN" ,maxlen))
+                             (when async `("ASYNC"))))))
 
 ;;; end
