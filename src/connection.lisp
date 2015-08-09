@@ -21,7 +21,7 @@ for debugging purposes.  The default is *STANDARD-OUTPUT*.")
 
 ;;; Low-level connection handling
 
-(defvar *connection* nil "The current Cl-Disque connection.")
+(defvar *connection* nil "The current Disque connection.")
 
 (defclass cl-disque-connection ()
   ((host
@@ -30,7 +30,7 @@ for debugging purposes.  The default is *STANDARD-OUTPUT*.")
     :reader   conn-host)
    (port
     :initarg  :port
-    :initform 6379
+    :initform 7711
     :reader   conn-port)
    (auth
     :initarg  :auth
@@ -42,7 +42,7 @@ for debugging purposes.  The default is *STANDARD-OUTPUT*.")
    (stream
     :initform nil
     :accessor conn-stream))
-  (:documentation "Representation of a Cl-Disque connection."))
+  (:documentation "Representation of a Disque connection."))
 
 (defmethod initialize-instance :after ((conn cl-disque-connection) &key)
   (open-connection conn))
@@ -77,7 +77,7 @@ set the socket of CONN to the associated socket."
         (usocket:socket-close (conn-socket conn))
       (error (e)
         (warn "Ignoring the error that happened while trying to close ~
-Cl-Disque socket: ~A" e)))))
+Disque socket: ~A" e)))))
 
 (defun reopen-connection (conn)
   "Close and reopen CONN."
@@ -91,11 +91,11 @@ Cl-Disque socket: ~A" e)))))
   "Is there a current connection?"
   (and *connection* (connection-open-p *connection*)))
 
-(defun connect (&key (host #(127 0 0 1)) (port 6379) auth)
-  "Connect to Cl-Disque server."
+(defun connect (&key (host #(127 0 0 1)) (port 7711) auth)
+  "Connect to Disque server."
   (when (connected-p)
     (restart-case (error 'cl-disque-error
-                         :error "A connection to Cl-Disque server is already established.")
+                         :error "A connection to Disque server is already established.")
       (:leave ()
         :report "Leave it."
         (return-from connect))
@@ -107,17 +107,17 @@ Cl-Disque socket: ~A" e)))))
 
 
 (defun disconnect ()
-  "Disconnect from Cl-Disque server."
+  "Disconnect from Disque server."
   (when *connection*
     (close-connection *connection*)
     (setf *connection* nil)))
 
 (defun reconnect ()
-  "Close and reopen the connection to Cl-Disque server."
+  "Close and reopen the connection to Disque server."
   (reopen-connection *connection*))
 
 (defmacro with-connection ((&key (host #(127 0 0 1))
-                                 (port 6379)
+                                 (port 7711)
                                  auth)
                            &body body)
   "Evaluate BODY with the current connection bound to a new connection
@@ -153,11 +153,11 @@ the conenction is re-established."
   (with-gensyms (e)
     `(handler-case (progn ,@body)
        (usocket:connection-refused-error (,e)
-         ;; Errors of this type commonly occur when there is no Cl-Disque server
+         ;; Errors of this type commonly occur when there is no Disque server
          ;; running, or when one tries to connect to the wrong host or port.
          (reconnect-restart-case
            (:error ,e
-            :comment "Make sure Cl-Disque server is running and check your connection parameters.")
+            :comment "Make sure the Disque server is running and check your connection parameters.")
            ,@body))
        ((or usocket:socket-error stream-error end-of-file
             #+lispworks comm:socket-error) (,e)
@@ -168,10 +168,10 @@ the conenction is re-established."
 ;;; Convenience macros
 
 (defmacro with-recursive-connection ((&key (host #(127 0 0 1))
-                                           (port 6379)
+                                           (port 7711)
                                            auth)
                                      &body body)
-  "Execute BODY with *CONNECTION* bound to the default Cl-Disque
+  "Execute BODY with *CONNECTION* bound to the default Disque
 connection. If connection is already established, reuse it."
   `(if (connected-p)
        (progn ,@body)
@@ -179,7 +179,7 @@ connection. If connection is already established, reuse it."
          ,@body)))
 
 (defmacro with-persistent-connection ((&key (host #(127 0 0 1))
-                                            (port 6379)
+                                            (port 7711)
                                             auth)
                                       &body body)
   "Execute BODY inside WITH-CONNECTION. But if connection is broken
@@ -189,7 +189,7 @@ transparently reopen it."
      (handler-bind ((cl-disque-connection-error
                      (lambda (e)
                        (declare (ignore e))
-                       (warn "Reconnecting to Cl-Disque.")
+                       (warn "Reconnecting to Disque.")
                        (invoke-restart :reconnect))))
        ,@body)))
 
