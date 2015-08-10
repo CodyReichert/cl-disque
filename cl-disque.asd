@@ -18,27 +18,7 @@
                                     (:file "float")
                                     (:file "connection")
                                     (:file "cl-disque")
-                                    (:file "commands")))))
-
-
-(defmethod perform ((o test-op)
-                    (c (eql (find-system 'cl-disque))))
-  (operate 'load-op '#:cl-disque)
-  (operate 'test-op '#:cl-disque-test))
-
-(defsystem #:cl-disque-test
-  :version "0.0.1"
-  :author "cody Reichert"
-  :maintainer "Cody Reichert <codyreichert@gmail.com>"
-  :licence "MIT"
-  :description "CL-Disque test suite"
-  :depends-on (#:cl-disque #:bordeaux-threads #:flexi-streams #:should-test)
-  :components ((:module "t"
-                       :components ((:file "cl-disque-test")))))
-
-(defmethod perform ((o test-op)
-                    (c (eql (find-system 'cl-disque-test))))
-  (asdf:load-system '#:cl-disue-test)
-  (funcall (read-from-string "cl-disque-test:run-tests")))
+                                    (:file "commands"))))
+  :in-order-to ((test-op (test-op cl-disque-test))))
 
 ;;; end
