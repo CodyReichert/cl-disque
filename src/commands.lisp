@@ -49,17 +49,19 @@ elements but may return duplicated elements.")
 
 ;;; Jobs handling
 
-(def-cmd GETJOB (queue &rest args &key nohang timeout count withcounters) :multi
+(def-cmd GETJOB (queues &rest args &key nohang timeout count withcounters) :multi
   "Gets a job from the specific queue.")
 
 (defmethod tell ((cmd (eql 'GETJOB)) &rest args)
-  (ds-bind (queue &key nohang timeout count withcounters) args
+  (ds-bind (queues &key nohang timeout count withcounters) args
     (apply #'tell (cl:append (list "GETJOB")
                              (when nohang `("NOHANG"))
                              (when timeout `("TIMEOUT" ,timeout))
                              (when count `("COUNT" ,count))
                              (when withcounters `("WITHCOUNTERS"))
-                             (list "FROM") (list queue)))))
+                             (list "FROM") (if (eql (type-of queues) 'cons)
+                                               (loop for q in queues collecting q)
+                                               (list queues))))))
 
 
 (def-cmd ADDJOB (queue job timeout &rest args &key replicate delay retry ttl maxlen async) :status
