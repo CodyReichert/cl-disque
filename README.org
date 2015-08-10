@@ -10,7 +10,7 @@ A Disque client for Common Lisp.
 
 1) Make sure a Disque server is running.
 2) =(ql:quickload 'cl-disque)=
-3) Connect to the server to the given host and port with:
+3) Connect to the server on the given host and port with:
 
    #+BEGIN_SRC lisp
      ; host defaults to 127.0.0.1, port — to 7711
@@ -22,10 +22,9 @@ A Disque client for Common Lisp.
    #+BEGIN_SRC lisp
    (disque:hello)
    ;=> (1 "some-node-id"
-   ;    ("some-node-id" "" "7711" "1"))
+   ;    ("some-node-ids" "" "7711" "1"))
    #+END_SRC
 
-   
 5) Disconnect from the server with =(cl-disque:disconnect)=.
 6) Alternatively, wrap the whole interaction session in =with-connection= macro,
    which accepts the same arguments as =connect=, opens a socket connection,
@@ -34,37 +33,102 @@ A Disque client for Common Lisp.
    afterwards.
 
 ** Available commands
+   Cl-Disque supports all of the Disque client commands and their
+   arguments. See [[https://github.com/antirez/disque][The Disque Documentation]] for more specifics on each
+   command
 
+*** INFO
+    Args: ()
+    Response-type: :bulk
+
+*** HELLO
+    Args: ()
+    Response-type: :multi
+
+*** QLEN
+    Args: (queue)
+    Response-type: :integer
+
+*** QPEEK
+    Args: (queue count)
+    Response-type: :multi
+
+*** QSCAN
+    Args: (&rest args &key count busyloop minlen maxlen importrate)
+    Response-type: :multi
+
+*** GETJOB
+    Args: (queues &rest args &key nohang timeout count withcounters)
+    Reponse-type: :multi
+
+*** ADDJOB
+    Args: (queue job timeout &rest args &key replicate delay retry ttl
+    maxlen async)
+    Response-type: :status
+
+*** ACKJOB
+    Args: (job &rest jobs)
+    Response-type: :integer
+
+*** FASTACK
+    Args: (job &rest jobs)
+    Response-type: :integer
+
+*** WORKING
+    Args: (job)
+    Response-type: :integer
+
+*** NACK
+    Args: (job &rest jobs)
+    Response-type: :integer
+
+*** ENQUEUE
+    Args: (job &rest jobs)
+    Reponse-type: :integer
+
+*** DEQUEUE
+    Args: (job &rest jobs)
+    Response-type :integer
+
+
+*** DELJOB
+    Args: (job &rest jobs)
+    Response-type: :integer
+
+*** SHOW
+    Args: (job)
+    Response-type: :multi
 
 
 ** Code organization
 
-The system provides 2 packages: =CL-DISQUE= and =DISQUE=.  All the
-functionality is available from the =CL-DISQUE= package.  Not to cause
-symbol clashes, Disque commands are defined in this package with a
-prefix (which defaults to =disque-= and is set at compilation time).
-The package =DISQUE= is a syntactic sugar — it just provides the Disque
-commands without a prefix.  So it is not intended to be imported to
-avoid symbol conflicts with package =COMMON-LISP= — just use the
-package-qualified symbol names: i.e. the same Disque command (for
-instance =INFO=) can be called as =DISQUE-INFO= (if you import the =CL-DISQUE= package)
-or =DISQUE:INFO=.
+   The system provides two packages: =CL-DISQUE= and =DISQUE=.
+
+   Everything is available in the =CL-DISQUE= package.
+
+   The =DISQUE= package contains all of the commands for interacting
+   with a Disque server. This is simply syntactic sugar, as all of the
+   commands are /also/ available in the =CL-DISQUE= package with a
+   command prefix. For Example:
+
+   #+BEGIN_SRC lisp
+     (disque:info)
+     ;; is the same as
+     (cl-disque:disque-info)
+   #+END_SRC
 
 
 ** Installation
 
-This package is currently available through Git, but if you use
-Quicklisp you can clone it into your =~/quicklisp/local-projects/=
-directory, and =(ql:quickload :cl-disque)= as normal.
+Git clone this repo into your =~/quicklisp/local-projects/= directory,
+and =(ql:quickload :cl-disque)=.
 
 ** Dependencies
 
 - [[http://common-lisp.net/project/usocket/][usocket]]
 - [[http://common-lisp.net/project/flexi-streams/][flexi-streams]]
 - [[http://github.com/vseloved/rutils][rutils]]
-- For tests:
-  - [[http://github.com/vseloved/nuts][nuts]]
-  - [[http://common-lisp.net/project/bordeaux-threads][bordeaux-threads]]
+- [[http://github.com/fukamachi/prove][prove]] (for tests)
 
 
 ** Debugging and error recovery
@@ -101,35 +165,7 @@ results will only be available to the highest-level pipeline, all the
 nested pipelines will return :PIPELINED.  So a warining is signalled
 in this situation.
 
-
-** Internals
-
-Generic functions =tell= and =expect= implement the Disque protocol.
-=tell= specifies how a request to Disque is formatted,
-=expect= is how the response is handled.
-The best way to implement another method on =expect= is usually with
-=def-expect-method=, which arranges reading data from the socket
-and provides a variable =reply=, which holds the decoded reply data
-from the server with the initial character removed. For example:
-
-    (def-expect-method :ok
-      (assert (string= reply "OK"))
-      reply)
-
-Disque operations are defined as ordinary functions by =def-cmd=
-for which only arguments and return type should be provided.
-=def-cmd= prefixes all the defined functions' names with =*cmd-prefix*=,
-which defaults to =\'red=.
-(Note, that setting of =*cmd-prefix*= will have its effects at compile time).
-It also exports them from =CL-DISQUE= package,
-and from =DISQUE= package without the prefix.
-
-An example of command definition is given below:
-
-    (def-cmd KEYS (pattern) :multi
-      "Return all the keys matching the given pattern.")
-
-See =commands.lisp= for all defined commands.
+*Note: Pipelining has not been tested since being ported form cl-redis.*
 
 
 ** Not implemented
@@ -140,9 +176,9 @@ See =commands.lisp= for all defined commands.
 
 Cody Reichert <codyreichert@gmail.com> is the maintainer of =CL-DISQUE=.
 
-=CL-DISQUE= is a port of the =CL-REDIS= client, which is developed and
+=CL-DISQUE= is a ported of the [[http://github.com/vseloved/cl-redis][CL-REDIS]] client, which is developed and
 maintained by Vsevolod Dyomkin <vseloved@gmail.com>. Many thanks to
-him for implementing the protocol and providing the internals.
+him for implementing the protocol and providing most of the internals.
 
 Alexandr Manzyuk <manzyuk@googlemail.com> also contributed to
 =CL-REDIS= client and developed the connection handling code following
