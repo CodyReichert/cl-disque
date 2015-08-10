@@ -1,36 +1,62 @@
 #+TITLE: CL-DISQUE
 #+AUTHOR: Cody Reichert
-#+EMAIL: codyreichert@gmail.com 
+#+EMAIL: codyreichert@gmail.com
 
 A Disque client for Common Lisp.
 
 * Usage
-
 ** Quickstart
+   First, make sure a Disque server is running.
 
-1) Make sure a Disque server is running.
-2) =(ql:quickload 'cl-disque)=
-3) Connect to the server on the given host and port with:
+   Load cl-disque and connect to the Disque server on the given host and port:
 
    #+BEGIN_SRC lisp
+     (ql:quickload 'cl-disque)
+
      ; host defaults to 127.0.0.1, port — to 7711
      (cl-disque:connect :host <host> :port <port>)
    #+END_SRC
 
-4) Interact with the server using Disque commands from the =disque= package.
-   
+   Interact with the server using Disque commands from the =disque= package.
+
    #+BEGIN_SRC lisp
    (disque:hello)
+   ;=> (1 "node-id"
+   ;    ("node-ids" "host" "7711" "1"))
+   #+END_SRC
+
+   Disconnect from the Disque server with:
+
+   #+BEGIN_SRC lisp
+   (cl-disque:disconnect)
    ;=> (1 "some-node-id"
    ;    ("some-node-ids" "" "7711" "1"))
    #+END_SRC
 
-5) Disconnect from the server with =(cl-disque:disconnect)=.
-6) Alternatively, wrap the whole interaction session in =with-connection= macro,
-   which accepts the same arguments as =connect=, opens a socket connection,
-   executes the body of the macro with the current connection (=*connection*=)
-   bound to this new connection, and ensures that the connection is closed
-   afterwards.
+   Alternatively, you can wrap all interactions with the
+   =with-connection= macro, which creates a new connection to
+   execute the given body, and assures a disconnect afterwards:
+
+   #+BEGIN_SRC lisp
+   (cl-disque:with-connection ()
+     (disque:addjob "queue" "job" 0)
+
+     (disque:getjob "queue" 1))
+   ;=> (("queue" "job-hash" "job"))
+   #+END_SRC
+
+   The Makefile offers a couple of commands for running the test-suite
+   and load cl-disque into an SBCL repl:
+
+   #+BEGIN_SRC sh
+   # To run the test suite
+   $ make test
+   #+END_SRC
+
+   #+BEGIN_SRC sh
+   # To load an SBCL repl
+   $ make sbcl-repl
+   #+END_SRC
 
 ** Available commands
    Cl-Disque supports all of the Disque client commands and their
@@ -90,7 +116,6 @@ A Disque client for Common Lisp.
     Args: (job &rest jobs)
     Response-type :integer
 
-
 *** DELJOB
     Args: (job &rest jobs)
     Response-type: :integer
@@ -99,9 +124,7 @@ A Disque client for Common Lisp.
     Args: (job)
     Response-type: :multi
 
-
 ** Code organization
-
    The system provides two packages: =CL-DISQUE= and =DISQUE=.
 
    Everything is available in the =CL-DISQUE= package.
@@ -113,10 +136,9 @@ A Disque client for Common Lisp.
 
    #+BEGIN_SRC lisp
      (disque:info)
-     ;; is the same as
+     ; is the same as
      (cl-disque:disque-info)
    #+END_SRC
-
 
 ** Installation
 
@@ -129,7 +151,6 @@ and =(ql:quickload :cl-disque)=.
 - [[http://common-lisp.net/project/flexi-streams/][flexi-streams]]
 - [[http://github.com/vseloved/rutils][rutils]]
 - [[http://github.com/fukamachi/prove][prove]] (for tests)
-
 
 ** Debugging and error recovery
 
@@ -151,9 +172,7 @@ There's also a high-level =with-persistent-connection= macro, that
 tries to do the right thing™ (i.e. automatically reopen the connection
 once, if it is broken).
 
-
 ** Advanced usage
-
 *** Pipelining
 
 For better performance Disque allows to pipeline commands and delay
@@ -166,7 +185,6 @@ nested pipelines will return :PIPELINED.  So a warining is signalled
 in this situation.
 
 *Note: Pipelining has not been tested since being ported form cl-redis.*
-
 
 ** Not implemented
 
@@ -185,7 +203,6 @@ Alexandr Manzyuk <manzyuk@googlemail.com> also contributed to
 the implementation in [[http://common-lisp.net/project/postmodern/][Postmodern]]. It was since partially rewritten to
 accommodate more advanced connection handling strategies, like
 persistent connection.
-
 
 ** License
 
