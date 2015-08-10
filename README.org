@@ -1,6 +1,6 @@
 #+TITLE: CL-DISQUE
 #+AUTHOR: Cody Reichert
-#+EMAIL: codyreichert@gmail.com 
+#+EMAIL: codyreichert@gmail.com
 
 A Disque client for Common Lisp.
 
@@ -18,7 +18,7 @@ A Disque client for Common Lisp.
    #+END_SRC
 
 4) Interact with the server using Disque commands from the =disque= package.
-   
+
    #+BEGIN_SRC lisp
    (disque:hello)
    ;=> (1 "some-node-id"
@@ -38,66 +38,74 @@ A Disque client for Common Lisp.
    command
 
 *** INFO
-    Args: ()
-    Response-type: :bulk
+    - Args: ()
+    - Response-type: :bulk
 
 *** HELLO
-    Args: ()
-    Response-type: :multi
+    - Args: ()
+    - Response-type: :multi
 
 *** QLEN
-    Args: (queue)
-    Response-type: :integer
+    - Args: (queue)
+    - Response-type: :integer
 
 *** QPEEK
-    Args: (queue count)
-    Response-type: :multi
+    - Args: (queue count)
+    - Response-type: :multi
 
 *** QSCAN
-    Args: (&rest args &key count busyloop minlen maxlen importrate)
-    Response-type: :multi
+    - Args: (&rest args &key count busyloop minlen maxlen importrate)
+    - Response-type: :multi
 
 *** GETJOB
-    Args: (queues &rest args &key nohang timeout count withcounters)
-    Reponse-type: :multi
+    - Args: (queues &rest args &key nohang timeout count withcounters)
+    - Reponse-type: :multi
+
+    /Note: queues can either be a single queue or a list of queues:/
+
+    #+BEGIN_SRC lisp
+      (disque:getjob "queue1")
+      ;; or
+      (disque:getjob '("queue1" "queue2" "queue3")
+    #+END_SRC
 
 *** ADDJOB
-    Args: (queue job timeout &rest args &key replicate delay retry ttl
+    - Args: (queue job timeout &rest args &key replicate delay retry ttl
     maxlen async)
-    Response-type: :status
+    - Response-type: :status
 
 *** ACKJOB
-    Args: (job &rest jobs)
-    Response-type: :integer
+    - Args: (job &rest jobs)
+    - Response-type: :integer
 
 *** FASTACK
-    Args: (job &rest jobs)
-    Response-type: :integer
+    - Args: (job &rest jobs)
+    - Response-type: :integer
 
 *** WORKING
-    Args: (job)
-    Response-type: :integer
+    - Args: (job)
+    - Response-type: :integer
 
 *** NACK
-    Args: (job &rest jobs)
-    Response-type: :integer
+    - Args: (job &rest jobs)
+    - Response-type: :integer
 
 *** ENQUEUE
-    Args: (job &rest jobs)
-    Reponse-type: :integer
+    - Args: (job &rest jobs)
+    - Reponse-type: :integer
 
 *** DEQUEUE
-    Args: (job &rest jobs)
-    Response-type :integer
+    - Args: (job &rest jobs)
+    - Response-type :integer
 
 
 *** DELJOB
-    Args: (job &rest jobs)
-    Response-type: :integer
+    - Args: (job &rest jobs)
+    - Response-type: :integer
 
 *** SHOW
-    Args: (job)
-    Response-type: :multi
+    - Args: (job)
+    - Response-type: :multi
 
 
 ** Code organization
