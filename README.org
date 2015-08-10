@@ -90,9 +90,9 @@ A Disque client for Common Lisp.
     /Note: queues can either be a single queue or a list of queues:/
 
     #+BEGIN_SRC lisp
-      (disque:getjob "queue1")
-      ;; or
-      (disque:getjob '("queue1" "queue2" "queue3")
+    (disque:getjob "queue1")
+    ;; or
+    (disque:getjob '("queue1" "queue2" "queue3")
     #+END_SRC
 
 *** ADDJOB
@@ -143,9 +143,9 @@ A Disque client for Common Lisp.
    command prefix. For Example:
 
    #+BEGIN_SRC lisp
-     (disque:info)
-     ; is the same as
-     (cl-disque:disque-info)
+   (disque:info)
+   ; is the same as
+   (cl-disque:disque-info)
    #+END_SRC
 
 ** Installation
