@@ -29,24 +29,21 @@ A Disque client for Common Lisp.
 
    #+BEGIN_SRC lisp
    (cl-disque:disconnect)
-   ;=> (1 "some-node-id"
-   ;    ("some-node-ids" "" "7711" "1"))
    #+END_SRC
 
-   Alternatively, you can wrap all interactions with the
+   Alternatively, you can wrap all interactions in the
    =with-connection= macro, which creates a new connection to
    execute the given body, and assures a disconnect afterwards:
 
    #+BEGIN_SRC lisp
    (cl-disque:with-connection ()
      (disque:addjob "queue" "job" 0)
-
      (disque:getjob "queue" 1))
    ;=> (("queue" "job-hash" "job"))
    #+END_SRC
 
    The Makefile offers a couple of commands for running the test-suite
-   and load cl-disque into an SBCL repl:
+   and loading cl-disque into an SBCL repl:
 
    #+BEGIN_SRC sh
    # To run the test suite
@@ -158,7 +155,7 @@ and =(ql:quickload :cl-disque)=.
 - [[http://common-lisp.net/project/usocket/][usocket]]
 - [[http://common-lisp.net/project/flexi-streams/][flexi-streams]]
 - [[http://github.com/vseloved/rutils][rutils]]
-- [[http://github.com/fukamachi/prove][prove]] (for tests)
+- [[http://github.com/fukamachi/prove][prove]] (only for tests)
 
 ** Debugging and error recovery
 
