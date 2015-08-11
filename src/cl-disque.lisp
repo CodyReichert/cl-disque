@@ -203,6 +203,7 @@ server with the first character removed."
          :collect (ecase (peek-char nil (conn-stream *connection*))
                     (#\: (expect :integer))
                     (#\$ (expect :bulk))
+                    (#\+ (expect :status))
                     (#\* (expect :multi)))))))
 
 (def-expect-method :queued

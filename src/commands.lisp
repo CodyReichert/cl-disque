@@ -127,6 +127,22 @@ message is sent to other nodes.")
   "Describe the job.")
 
 
-;; TODO: JSCAN
+(def-cmd JSCAN (cursor &rest args &key count blocking queue state reply) :multi
+  "JSCAN provides an interface to iterate all the existing jobs in the
+local node, providing a cursor in the form of an integer that is
+passed to the next command invocation. During the first call the
+cursor must be 0, in the next calls the cursor returned in the
+previous call is used next. The iterator guarantees to return all
+elements but may return duplicates.")
+
+(defmethod tell ((cursor (eql 'JSCAN)) &rest args)
+  (ds-bind (cursor &key count blocking queue state reply) args
+    (apply #'tell (cl:append (list "JSCAN" cursor)
+                             (when count `("COUNT" ,count))
+                             (when blocking `("BUSYLOOP"))
+                             (when queue `("QUEUE" ,queue))
+                             (when state `("STATE" ,state))
+                             (when reply `("REPLY" ,reply))))))
+
 
 ;;; end
