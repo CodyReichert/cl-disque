@@ -2,7 +2,7 @@
 #+AUTHOR: Cody Reichert
 #+EMAIL: codyreichert@gmail.com
 
-A Disque client for Common Lisp.
+A [[https://github.com/antirez/disque][Disque]] client for Common Lisp.
 
 * Usage
 ** Quickstart
@@ -129,6 +129,10 @@ A Disque client for Common Lisp.
     - Args: (job)
     - Response-type: :multi
 
+*** JSCAN
+    - Args: (cursor &rest args &key count blocking queue state reply)
+    - Response-type: :multi
+
 ** Code organization
    The system provides two packages: =CL-DISQUE= and =DISQUE=.
 
@@ -190,10 +194,6 @@ nested pipelines will return :PIPELINED.  So a warining is signalled
 in this situation.
 
 *Note: Pipelining has not been tested since being ported form cl-redis.*
-
-** Not implemented
-
-- =JSCAN= is currently the only command not implemented.
 
 ** Credits
 
