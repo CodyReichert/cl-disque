@@ -9,7 +9,7 @@
   :version "0.0.1"
   :author "Cody Reichert <codyreichert@gmail.com>"
   :maintainer "Cody Reichert <codyreichert@gmail.com>"
-  :licence "MIT"
+  :license "MIT"
   :description "A Disque client for Common Lisp"
   :depends-on (#:rutils #:cl-ppcre #:usocket #:flexi-streams #:babel)
   :serial t
