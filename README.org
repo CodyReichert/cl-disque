@@ -13,7 +13,7 @@ A [[https://github.com/antirez/disque][Disque]] client for Common Lisp.
    #+BEGIN_SRC lisp
      (ql:quickload 'cl-disque)
 
-     ; host defaults to 127.0.0.1, port — to 7711
+     ; host defaults to 127.0.0.1, port defaults to 7711
      (cl-disque:connect :host <host> :port <port>)
    #+END_SRC
 
