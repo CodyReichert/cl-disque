@@ -6,7 +6,7 @@ A [[https://github.com/antirez/disque][Disque]] client for Common Lisp.
 
 Disque is an in-memory job queue and message broker. It's distributed
 and fault-tolerant so it works as a middle layer among processes that
-want to exchange messages.[fn:1]
+want to exchange messages.
 
 Learn more about message queues [[https://github.com/antirez/disque#what-is-a-message-queue][here]], and more about the Disque
 implementation [[https://github.com/antirez/disque#give-me-the-details][here]].
@@ -222,5 +222,3 @@ persistent connection.
 ** License
 
 MIT (See LICENSE file for details).
-
-[fn:1] https://github.com/antirez/disque#disque-an-in-memory-distributed-job-queue
