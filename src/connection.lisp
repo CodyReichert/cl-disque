@@ -183,8 +183,7 @@ connection. If connection is already established, reuse it."
                                             auth)
                                       &body body)
   "Execute BODY inside WITH-CONNECTION. But if connection is broken
-due to CL-DISQUE-CONNECTION-
-  (a network error or timeout),
+due to DISQUE-CONNECTION-ERROR (a network error or timeout),
 transparently reopen it."
   `(with-connection (:host ,host :port ,port :auth ,auth)
      (handler-bind ((disque-connection-error
