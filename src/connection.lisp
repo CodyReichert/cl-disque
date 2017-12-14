@@ -131,14 +131,14 @@ specified by the given HOST and PORT"
 ;;; Handling connection errors
 
 (defmacro reconnect-restart-case ((&key error comment) &body body)
-  "Signal the condition of type CL-DISQUE-CONNECTION-ERROR denoted by
+  "Signal the condition of type DISQUE-CONNECTION-ERROR denoted by
 the given ERROR and COMMENT offering a :RECONNECT restart to re-evaluate BODY."
   `(if *pipelined*
        ;; don't intercept connection-errors inside a pipeline -
        ;; it will be done on the highest level of a pipeline to allow
        ;; the whole pipeline (with possible nestsed pipelines) to restart
        (progn ,@body)
-       (restart-case (error 'cl-disque-connection-error
+       (restart-case (error 'disque-connection-error
                             :error ,error :message ,comment)
          (:reconnect ()
            :report "Try to reconnect and repeat action."
@@ -147,7 +147,7 @@ the given ERROR and COMMENT offering a :RECONNECT restart to re-evaluate BODY."
 
 (defmacro with-reconnect-restart (&body body)
   "When, during the execution of BODY, an error occurs that breaks
-the connection, a CL-DISQUE-CONNECTION-ERROR is signalled,
+the connection, a DISQUE-CONNECTION-ERROR is signalled,
 offering a :RECONNECT restart that will re-evaluate body after
 the conenction is re-established."
   (with-gensyms (e)
@@ -183,10 +183,10 @@ connection. If connection is already established, reuse it."
                                             auth)
                                       &body body)
   "Execute BODY inside WITH-CONNECTION. But if connection is broken
-due to CL-DISQUE-CONNECTION-ERROR (a network error or timeout),
+due to DISQUE-CONNECTION-ERROR (a network error or timeout),
 transparently reopen it."
   `(with-connection (:host ,host :port ,port :auth ,auth)
-     (handler-bind ((cl-disque-connection-error
+     (handler-bind ((disque-connection-error
                      (lambda (e)
                        (declare (ignore e))
                        (warn "Reconnecting to Disque.")
